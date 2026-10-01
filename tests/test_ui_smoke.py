@@ -139,6 +139,60 @@ class WidgetBuildTest(unittest.TestCase):
         view._on_item(ItemStatus("X.zip", ItemState.DONE))
         view._on_finished(JobResult(completed=1, total=1))
 
+    @unittest.skipIf(USING_STUB, "o stub Qt não simula estado dos widgets")
+    def test_selecionar_todos_marca_os_checkboxes(self):
+        from PySide6.QtCore import QPoint, Qt
+        from PySide6.QtGui import QImage, QPainter
+        from PySide6.QtTest import QTest
+        from ui.views.workspace_view import WorkspaceView
+
+        sfx_enabled = self.cfg.get_bool("sfx_enabled")
+        self.addCleanup(self.cfg.set, "sfx_enabled", sfx_enabled)
+        self.cfg.set("sfx_enabled", False)
+
+        view = WorkspaceView(self.cfg, self.t, self.sound)
+        view.show()
+        self.app.processEvents()
+        view.items.populate([Path("one.zip"), Path("two.zip")])
+        self.assertEqual(view.items.checked_count(), 0)
+
+        row = view.items.visualItemRect(view.items.item(0))
+        box = view.items.delegate.check_rect(row.adjusted(4, 3, -4, -3))
+        QTest.mouseClick(view.items.viewport(), Qt.MouseButton.LeftButton, pos=box.center())
+        self.app.processEvents()
+        self.assertEqual(view.items.checked_count(), 1)
+
+        def checkbox_pixel(item_index):
+            image = QImage(view.items.viewport().size(), QImage.Format.Format_ARGB32)
+            painter = QPainter(image)
+            view.items.viewport().render(painter, QPoint())
+            painter.end()
+            item_rect = view.items.visualItemRect(view.items.item(item_index))
+            item_box = view.items.delegate.check_rect(item_rect.adjusted(4, 3, -4, -3))
+            return image.pixelColor(item_box.center().x(), item_box.top() + 6).name()
+
+        accent = view.items.delegate.tokens.accent.lower()
+        self.assertEqual(checkbox_pixel(0), accent)
+
+        view.btn_select_all.click()
+        self.app.processEvents()
+
+        self.assertEqual(view.items.checked_count(), 2)
+        self.assertTrue(all(
+            view.items.item(index).checkState() == Qt.CheckState.Checked
+            for index in range(view.items.count())
+        ))
+        self.assertEqual(checkbox_pixel(0), accent)
+        self.assertEqual(checkbox_pixel(1), accent)
+
+        view.btn_select_all.click()
+        self.app.processEvents()
+        self.assertEqual(view.items.checked_count(), 0)
+        self.assertTrue(all(
+            view.items.item(index).checkState() == Qt.CheckState.Unchecked
+            for index in range(view.items.count())
+        ))
+
 
 class LocaleTest(unittest.TestCase):
     def test_nenhuma_chave_em_falta(self):

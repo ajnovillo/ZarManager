@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-10-01
+
+### Fixed
+- **File list selection bug**: checkboxes now always reflect the real selection state. Previously, after refreshing the list or inverting the selection, the boxes could show up empty while the counter said everything was selected. A full repaint is now triggered immediately after every checkbox toggle.
+
+### Changed
+- **"Invert selection" button renamed to "Select all".** Clicking it toggles between selecting and deselecting all files in one click. The locale key changed from `btn_invert` to `btn_select_all`.
+- Removed stale `settings.json` (leftover dev config with hardcoded paths).
+
+### Notes
+- macOS: PKG extraction (PkgTool) is not bundled in the macOS build for now; it will return in a future update. All other engines (CHD, RVZ, 7z, ZArchive, XISO) work as before.
+
 ## [1.3.0] - 2026-09-22
 
 ### Added

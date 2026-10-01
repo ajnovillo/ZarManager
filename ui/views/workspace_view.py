@@ -98,9 +98,9 @@ class WorkspaceView(QWidget):
         self.lbl_items.setProperty("role", "section")
         self.lbl_selected = QLabel()
         self.lbl_selected.setProperty("role", "muted")
-        self.btn_invert = action_button("", "quiet")
+        self.btn_select_all = action_button("", "quiet")
         self.btn_refresh = action_button("", "quiet")
-        self.btn_invert.clicked.connect(lambda: self.items.toggle_all())
+        self.btn_select_all.clicked.connect(lambda: self.items.toggle_all())
         self.btn_refresh.clicked.connect(self.refresh_items)
 
         header = QHBoxLayout()
@@ -109,7 +109,7 @@ class WorkspaceView(QWidget):
         header.addWidget(self.lbl_selected)
         header.addStretch()
         header.addWidget(self.btn_refresh)
-        header.addWidget(self.btn_invert)
+        header.addWidget(self.btn_select_all)
 
         self.items = ItemList()
         self.items.selectionCountChanged.connect(self._on_selection_changed)
@@ -335,7 +335,7 @@ class WorkspaceView(QWidget):
         self.btn_cancel.setEnabled(busy)
         self.btn_source.setEnabled(not busy)
         self.btn_target.setEnabled(not busy)
-        self.btn_invert.setEnabled(not busy)
+        self.btn_select_all.setEnabled(not busy)
         self.btn_refresh.setEnabled(not busy)
         if not busy:
             self.btn_pause.setText(self.t("btn_pause"))
@@ -445,7 +445,7 @@ class WorkspaceView(QWidget):
         self.btn_source.setText(self.t("btn_browse"))
         self.btn_target.setText(self.t("btn_browse"))
         self.lbl_items.setText(self.t("lbl_items"))
-        self.btn_invert.setText(self.t("btn_invert"))
+        self.btn_select_all.setText(self.t("btn_select_all"))
         self.btn_refresh.setText(self.t("btn_refresh"))
         self.btn_start.setText(self.t("btn_start"))
         self.btn_pause.setText(self.t("btn_resume") if self._paused else self.t("btn_pause"))

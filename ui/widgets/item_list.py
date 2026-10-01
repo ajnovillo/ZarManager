@@ -55,7 +55,11 @@ class ItemDelegate(QStyledItemDelegate):
         tokens = self.tokens
         data = index.data(DATA_ROLE) or {}
         row = option.rect.adjusted(4, 3, -4, -3)
-        checked = index.data(Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Checked
+        check_state = index.data(Qt.ItemDataRole.CheckStateRole)
+        checked = (
+            check_state == Qt.CheckState.Checked
+            or check_state == Qt.CheckState.Checked.value
+        )
 
         # fundo
         background = QColor(tokens.surface_alt if checked else tokens.surface)
@@ -134,14 +138,23 @@ class ItemDelegate(QStyledItemDelegate):
 
     def editorEvent(self, event, model, option, index) -> bool:
         """Clicar em qualquer ponto da linha alterna a seleção."""
-        from PySide6.QtCore import QEvent
+        from PySide6.QtCore import QEvent, QTimer
 
         if event.type() == QEvent.Type.MouseButtonRelease and event.button() == Qt.MouseButton.LeftButton:
             current = index.data(Qt.ItemDataRole.CheckStateRole)
+            is_checked = (
+                current == Qt.CheckState.Checked
+                or current == Qt.CheckState.Checked.value
+            )
             new_state = (
-                Qt.CheckState.Unchecked if current == Qt.CheckState.Checked else Qt.CheckState.Checked
+                Qt.CheckState.Unchecked
+                if is_checked
+                else Qt.CheckState.Checked
             )
             model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
+            item_list = self.parent()
+            if isinstance(item_list, ItemList):
+                QTimer.singleShot(0, item_list._force_full_repaint)
             return True
         return super().editorEvent(event, model, option, index)
 
@@ -221,15 +234,8 @@ class ItemList(QListWidget):
             self._by_name[path.name] = item
 
         self.blockSignals(False)
-        # Marcar tudo aqui, ANTES de inserir na lista, e só repintar no fim
-        # (com dataChanged manual e tudo) continuava a deixar as caixas em
-        # branco até ao primeiro clique -- confirmado por vídeo, mesmo depois
-        # do dataChanged. `set_all_checked()` faz exactamente essa marcação
-        # em massa e, esse sim, repinta correctamente (mesmo vídeo). Em vez
-        # de manter dois caminhos que deviam ser equivalentes mas não são na
-        # prática, a carga inicial reaproveita o único que comprovadamente
-        # funciona.
-        self.set_all_checked(True)
+        self._force_full_repaint()
+        self._emit_counts()
 
     def checked_paths(self) -> list[Path]:
         paths = []

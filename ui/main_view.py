@@ -108,30 +108,6 @@ class CoreWorkerThread(QThread):
             self.finished_signal.emit(self.req.mode, ProcessState.FAILED)
 
 
-class QtTabState:
-    def __init__(self, title_key: str, tip_key: str):
-        self.title_key = title_key
-        self.tip_key = tip_key
-        self.list_view: QListWidget = None
-        self.items: dict = {} 
-        self.state: ProcessState = ProcessState.IDLE
-        self.lbl_title: QLabel = None
-        self.lbl_tip: QLabel = None
-        self.grp_dir: QGroupBox = None
-        self.btn_src: QPushButton = None
-        self.btn_tgt: QPushButton = None
-        self.lbl_items_header: QLabel = None
-        self.btn_invert: QPushButton = None
-        self.lbl_counter: QLabel = None
-        self.lbl_percentage: QLabel = None
-        self.progress: QProgressBar = None
-        self.txt_source: QLineEdit = None
-        self.txt_target: QLineEdit = None
-        self.btn_start: QPushButton = None
-        self.btn_pause: QPushButton = None
-        self.btn_cancel: QPushButton = None
-
-
 class MainController(QWidget):
     def __init__(self, cfg, app_version: str, apply_theme_cb):
         super().__init__()
@@ -139,11 +115,11 @@ class MainController(QWidget):
         self.app_version = app_version
         self.apply_theme_cb = apply_theme_cb
         
-        self.tab_data: dict[ProcessMode, QtTabState] = {
-            ProcessMode.AUTO: QtTabState("tab_auto", "tip_auto"),
-            ProcessMode.EXTRACT_ARC: QtTabState("tab_extract_arc", "tip_extract_arc"),
-            ProcessMode.EXTRACT_ISO: QtTabState("tab_extract", "tip_extract"),
-            ProcessMode.COMPRESS: QtTabState("tab_compress", "tip_compress")
+        self.tab_data: dict[ProcessMode, TabState] = {
+            ProcessMode.AUTO: TabState("tab_auto", "tip_auto"),
+            ProcessMode.EXTRACT_ARC: TabState("tab_extract_arc", "tip_extract_arc"),
+            ProcessMode.EXTRACT_ISO: TabState("tab_extract", "tip_extract"),
+            ProcessMode.COMPRESS: TabState("tab_compress", "tip_compress")
         }
         
         self.active_threads: dict[ProcessMode, CoreWorkerThread] = {}
